@@ -1,13 +1,15 @@
 <!DOCTYPE html> 
 <html lang="en"> 
 <head> 
-	
 	<meta charset="UTF-8"> 
 	<meta name="viewport" content= 
 		"width=device-width, initial-scale=1.0"> 
 	<title>Geolocation - City</title> 
 </head> 
 <body> 
+<button onclick="getCoordintes()">Get Address...</button>
+
+<p id="demo"></p>
 	<!-- <script src="js/script.js" ></script>  -->
 	<script>
 	// Step 1: Get user coordinates 
@@ -53,15 +55,18 @@
 			if (xhr.readyState == 4 && xhr.status == 200) { 
 				var response = JSON.parse(xhr.responseText);
 				console.log(response); 
-				var city = response.address; 
-				alert(JSON.stringify(city));
+				var city = response.address;
+				var address=JSON.stringify(city);
+				/* alert(address); */
 				 console.log(city);  
+				 document.getElementById("demo").innerHTML ="Latitude:"+lat+","+"Longitude:"+lng+","+"My Address:"+address;
 				return; 
+				
 			} 
 		} 
 	} 
 
-	getCoordintes(); 
+/* 	getCoordintes();  */
 
 	</script>
 	</body> 
