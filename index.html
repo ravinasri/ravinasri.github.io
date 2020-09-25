@@ -30,6 +30,7 @@
                 map.setView({ center: loc, zoom: 15 });
             });
 
+            
             function loadMapScenario(lat, lon) {
                 var map = new Microsoft.Maps.Map(document.getElementById('myMap'), {});
                 Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
