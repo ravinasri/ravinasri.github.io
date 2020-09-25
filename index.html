@@ -1,105 +1,67 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8"> 
+	<meta name="viewport" content= 
+		"width=device-width, initial-scale=1.0"> 
+	<title>Geolocation - City</title> 
+</head> 
+<body> 
+	<!-- <script src="js/script.js" ></script>  -->
+	<script>
+	// Step 1: Get user coordinates 
+	function getCoordintes() { 
+		var options = { 
+			enableHighAccuracy: true, 
+			timeout: 5000, 
+			maximumAge: 0 
+		}; 
 
-<head>
-    <title></title>
-    <meta charset="utf-8" />
-    <script type='text/javascript'>
-        function GetMap() {
-            var map = new Microsoft.Maps.Map('#myMap', {
-                credentials: "Al_rAdGxqvM6yyObfbhVD_2pUvrxYnM-0wZQfPAkE4PBHA6R3NV6w3mDQG3GfaUa"
-            });
+		function success(pos) { 
+			var crd = pos.coords; 
+			var lat = crd.latitude.toString(); 
+			var lng = crd.longitude.toString(); 
+			var coordinates = [lat, lng]; 
+			console.log(`Latitude: ${lat}, Longitude: ${lng}`); 
+			getCity(coordinates); 
+			return; 
 
-            //Request the user's location
-            navigator.geolocation.getCurrentPosition(function (position) {
-                var loc = new Microsoft.Maps.Location(
-                    position.coords.latitude,
-                    position.coords.longitude);
+		} 
 
-                var positionInfo = "Your current position is (" + "Latitude: " + position.coords.latitude + ", " + "Longitude: " + position.coords.longitude + ")";
-                // alert(positionInfo);
-                document.getElementById("txtlatitude").value = position.coords.latitude;
-                document.getElementById("txtlongitude").value = position.coords.longitude;
+		function error(err) { 
+			console.warn(`ERROR(${err.code}): ${err.message}`); 
+		} 
 
-                loadMapScenario(position.coords.latitude, position.coords.longitude);
-                //Add a pushpin at the user's location.
-                var pin = new Microsoft.Maps.Pushpin(loc);
-                map.entities.push(pin);
+		navigator.geolocation.getCurrentPosition(success, error, options); 
+	} 
 
-                //Center the map on the user's location.
-                map.setView({ center: loc, zoom: 15 });
-            });
+	// Step 2: Get city name 
+	function getCity(coordinates) { 
+		var xhr = new XMLHttpRequest(); 
+		var lat = coordinates[0]; 
+		var lng = coordinates[1]; 
 
-            
-            function loadMapScenario(lat, lon) {
-                var map = new Microsoft.Maps.Map(document.getElementById('myMap'), {});
-                Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
-                    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
-                    var reverseGeocodeRequestOptions = {
-                        location: new Microsoft.Maps.Location(lat, lon),
-                        callback: function (answer, userData) {
-                            map.setView({ bounds: answer.bestView });
-                            map.entities.push(new Microsoft.Maps.Pushpin(reverseGeocodeRequestOptions.location));
-                            document.getElementById('txtaddr').value =
-                                answer.address.formattedAddress;
+		// Paste your LocationIQ token below. 
+		xhr.open('GET', "https://us1.locationiq.com/v1/reverse.php?key=22b1abb58de9a7&lat=" + 
+		lat + "&lon=" + lng + "&format=json", true); 
+		xhr.send(); 
+		xhr.onreadystatechange = processRequest; 
+		xhr.addEventListener("readystatechange", processRequest, false); 
 
-                        }
-                    };
-                    searchManager.reverseGeocode(reverseGeocodeRequestOptions);
-                });
+		function processRequest(e) { 
+			if (xhr.readyState == 4 && xhr.status == 200) { 
+				var response = JSON.parse(xhr.responseText);
+				console.log(response); 
+				var city = response.address; 
+				alert(JSON.stringify(city));
+				 console.log(city);  
+				return; 
+			} 
+		} 
+	} 
 
-            }
+	getCoordintes(); 
 
-
-        }
-        function sendData() {
-            alert("sendData()");
-            fetch("https://getmylocation.herokuapp.com/api/punchdatas/", {
-                method: "post",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-
-                //make sure to serialize your JSON body
-                body: JSON.stringify({
-                    punchdataid: 0,
-                    punchtime: new Date().toDateString()+" "+new Date().toLocaleTimeString(),
-                    address: document.getElementById("txtaddr").value,
-                    useremail: document.getElementById("txtuser").value,
-                    userlatitude: document.getElementById("txtlatitude").value,
-                    userlongitude: document.getElementById("txtlongitude").value
-                })
-            })
-                .then((response) => {
-                    //do something awesome that makes the world a better place
-                });
-        }
-    </script>
-    <script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap' async defer></script>
-</head>
-
-<body>
-    <div id="myMap" style="position:relative;width:600px;height:400px;"></div>
-    <br>
-    <hr>    
-    <label for="user">user</label>
-    <input type="text" name="txtuser" id="txtuser" value="Test User">
-    <br>
-    <label for="Latitude">Latitude</label>
-    <input type="text" name="txtlatitude" id="txtlatitude">
-    <br>
-    <label for="Longitude">Longitude</label>
-    <input type="text" name="txtlongitude" id="txtlongitude">
-    <br>
-    <label for="Address">Address</label>
-    <!-- <input type="text" name="txtaddr" id="txtaddr" width:580px;> -->
-    <input type="text" id="txtaddr" style="font-size: 10pt;  width:500px; ">
-    <br>
-    <div id='printoutPanel'></div>
-    <br>
-    <input type="submit" onclick="sendData()" value="Punch">
-    <hr>
-</body>
-
-</html>
+	</script>
+	</body> 
+</html> 
