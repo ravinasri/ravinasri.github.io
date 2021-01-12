@@ -1,73 +1,129 @@
-<!DOCTYPE html> 
-<html lang="en"> 
-<head> 
-	<meta charset="UTF-8"> 
-	<meta name="viewport" content= 
-		"width=device-width, initial-scale=1.0"> 
-	<title>Geolocation - City</title> 
-</head> 
-<body> 
-<button onclick="getCoordintes()">Get Address...</button>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Reverse Geocoding</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzNno8v3v3mtxUuyOUz9RH97XyB6VfmYw&callback=initMap&libraries=&v=weekly"
+      defer
+    ></script>
+    <script>
+        var mylat;
+var mylong;
+function showPosition() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+      var positionInfo =
+        "Your current position is (" +
+        "Latitude: " +
+        position.coords.latitude +
+        ", " +
+        "Longitude: " +
+        position.coords.longitude +
+        ")";
+        mylat=position.coords.latitude;
+        mylong=position.coords.longitude;
+    //   document.getElementById("result").innerHTML = positionInfo;
+    // alert(positionInfo);
+    // alert(mylat+","+mylong);
+    document.getElementById("latlng").value=mylat+","+mylong;
+    });
+  } else {
+    alert("Sorry, your browser does not support HTML5 geolocation.");
+  }
+}
+function initMap() {
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 8,
+    center: { lat: 40.731, lng: -73.997 },
+  });
+  const geocoder = new google.maps.Geocoder();
+  const infowindow = new google.maps.InfoWindow();
+  document.getElementById("submit").addEventListener("click", () => {
+    geocodeLatLng(geocoder, map, infowindow);
+  });
+}
 
-<p id="demo"></p>
-	<!-- <script src="js/script.js" ></script>  -->
-	<script>
-	// Step 1: Get user coordinates 
-	function getCoordintes() { 
-		var options = { 
-			enableHighAccuracy: true, 
-			timeout: 5000, 
-			maximumAge: 0 
-		}; 
-
-		function success(pos) { 
-			var crd = pos.coords; 
-			var lat = crd.latitude.toString(); 
-			var lng = crd.longitude.toString(); 
-			var coordinates = [lat, lng]; 
-			console.log(`Latitude: ${lat}, Longitude: ${lng}`); 
-			getCity(coordinates); 
-			return; 
-
-		} 
-
-		function error(err) { 
-			console.warn(`ERROR(${err.code}): ${err.message}`); 
-		} 
-
-		navigator.geolocation.getCurrentPosition(success, error, options); 
-	} 
-
-	// Step 2: Get city name 
-	function getCity(coordinates) { 
-		var xhr = new XMLHttpRequest(); 
-		var lat = coordinates[0]; 
-		var lng = coordinates[1]; 
-
-		// Paste your LocationIQ token below. 
-		xhr.open('GET', "https://us1.locationiq.com/v1/reverse.php?key=22b1abb58de9a7&lat=" + 
-		lat + "&lon=" + lng + "&format=json", true); 
-		xhr.send(); 
-		xhr.onreadystatechange = processRequest; 
-		xhr.addEventListener("readystatechange", processRequest, false); 
-
-		function processRequest(e) { 
-			if (xhr.readyState == 4 && xhr.status == 200) { 
-				var response = JSON.parse(xhr.responseText);
-				console.log(response); 
-				var city = response.address;
-				var address=JSON.stringify(city);
-				/* alert(address); */
-				 console.log(city);  
-				 document.getElementById("demo").innerHTML ="Latitude:"+lat+","+"Longitude:"+lng+","+"My Address:"+address;
-				return; 
-				
-			} 
-		} 
-	} 
-
-/* 	getCoordintes();  */
-
-	</script>
-	</body> 
-</html> 
+function geocodeLatLng(geocoder, map, infowindow) {
+  const input = document.getElementById("latlng").value;
+  const latlngStr = input.split(",", 2);
+  const latlng = {
+    lat: parseFloat(latlngStr[0]),
+    lng: parseFloat(latlngStr[1]),
+  };
+  geocoder.geocode({ location: latlng }, (results, status) => {
+    if (status === "OK") {
+      if (results[0]) {
+        map.setZoom(11);
+        const marker = new google.maps.Marker({
+          position: latlng,
+          map: map,
+        });
+        infowindow.setContent(results[0].formatted_address);
+        infowindow.open(map, marker);
+      } else {
+        window.alert("No results found");
+      }
+    } else {
+      window.alert("Geocoder failed due to: " + status);
+    }
+  });
+}
+    </script>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+       #map {
+        height: 100%;
+      }
+      
+      /* Optional: Makes the sample page fill the window. */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: "Roboto", "sans-serif";
+        line-height: 30px;
+        padding-left: 10px;
+      }
+      
+      #floating-panel {
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        margin-left: -180px;
+        width: 350px;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+      }
+      
+      #latlng {
+        width: 225px;
+      }
+    </style>
+    <!-- <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script src="./index.js"></script> -->
+  </head>
+  <body onload="showPosition();">
+    <!-- <button type="button" onclick="showPosition();">Show Position</button> -->
+    <div id="floating-panel">
+      <input id="latlng" type="text"/>
+      <input id="submit" type="button" value="Reverse Geocode" />
+    </div>
+    <div id="map"></div>
+  </body>
+</html>
